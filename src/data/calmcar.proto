@@ -1,0 +1,245 @@
+syntax = "proto3";
+
+package calmcar.proto;
+
+message Point {
+  double x = 1;
+  double y = 2;
+  double z = 3;
+}
+
+message Point2i {
+  int64 x = 1;
+  int64 y = 2;
+}
+
+message Rect {
+  double x = 1;
+  double y = 2;
+  double width = 3;
+  double height = 4;
+}
+
+message ImageInfo {
+  enum PixelFormat {
+    PIXEL_FORMAT_UNKNOWN = 0;
+    PIXEL_FORMAT_YUV422 = 1;
+    PIXEL_FORMAT_YUV420 = 2;
+    PIXEL_FORMAT_BGR = 3;
+    PIXEL_FORMAT_RGB = 4;
+    PIXEL_FORMAT_JPEG = 5;
+  }
+  int64 height = 1;
+  int64 width = 2;
+  PixelFormat pixel_format = 3;
+  bytes intrinsic = 4;
+  bytes extrinsic = 5;
+}
+
+message Image {
+  bytes data = 1;
+  int64 timestamp = 2;
+}
+
+message Can {
+  int64 id = 1;
+  int64 dlc = 2;
+  bytes data = 3;
+  int64 timestamp = 4;
+  int32 channel = 5;
+}
+
+message Gps {
+  double latitude = 1;
+  double longitude = 2;
+  double height = 3;
+  double angle = 4;
+
+  double speed = 5;
+
+  int64 hour = 6;
+  int64 minute = 7;
+  int64 second = 8;
+  int64 millisecond = 9;
+  int64 day = 10;
+  int64 month = 11;
+  int64 year = 12;
+
+  double course = 13;
+  int64 satellites = 14;
+
+  double ground_height = 15;
+  int64 unit = 16;
+}
+
+message Object {
+  enum SensorType {
+    SENSOR_TYPE_UNKNOWN = 0;
+    SENSOR_TYPE_CAMERA = 1;
+    SENSOR_TYPE_RADAR = 2;
+    SENSOR_TYPE_LIDAR = 3;
+    SENSOR_TYPE_FUSED = 4;
+  }
+  SensorType sensor_type = 1;
+  int64 id = 2;
+  int64 class_ = 3;
+  string class_name = 4;
+  int64 subclass = 5;
+  string subclass_name = 6;
+  double confidence = 7;
+  Rect bbox = 8;
+  int64 life_time = 9;
+  int64 timestamp = 10;
+  //
+  double height = 11;
+  double width = 12;
+  double length = 13;
+  //
+  Point distance = 14;
+  Point relative_velocity = 15;
+  Point relative_acceleration = 16;
+  //
+  double ttc = 17;
+  double thw = 18;
+  //
+  double angle_left = 19;
+  double angle_right = 20;
+  double yaw_angle = 21;
+
+  enum LaneAssignment {
+    LANE_ASSIGNMENT_NOT_ASSIGNED = 0;
+    LANE_ASSIGNMENT_EGO_LANE = 1;
+    LANE_ASSIGNMENT_NEXT_LANE_LEFT = 2;
+    LANE_ASSIGNMENT_NEXT_LANE_RIGHT = 3;
+    LANE_ASSIGNMENT_NEXT_NEXT_LANE_LEFT = 4;
+    LANE_ASSIGNMENT_NEXT_NEXT_LANE_RIGHT = 5;
+  }
+  LaneAssignment lane_assignment = 22;
+
+  enum MotionStatus {
+    MOTION_STATUS_UNKNOWN = 0;
+    MOTION_STATUS_PARKED = 1;
+    MOTION_STATUS_STOPPED = 2;
+    MOTION_STATUS_MOVING = 3;
+    MOTION_STATUS_ONCOMING = 4;
+    MOTION_STATUS_CROSSING = 5;
+  }
+  MotionStatus motion_status = 23;
+
+  enum CutInCutOut {
+    CUT_IN_CUT_OUT_UNKNOWN = 0;
+    CUT_IN_CUT_OUT_HOST_CUT_IN_LEFT = 1;
+    CUT_IN_CUT_OUT_HOST_CUT_IN_RIGHT = 2;
+    CUT_IN_CUT_OUT_HOST_CUT_OUT_LEFT = 3;
+    CUT_IN_CUT_OUT_HOST_CUT_OUT_RIGHT = 4;
+    CUT_IN_CUT_OUT_NO_CUT_IN_OUT = 5;
+  }
+  CutInCutOut cutin_cutout = 24;
+}
+
+message Lane {
+  enum CoordinateType {
+    COORDINATE_TYPE_IMAGE = 0;
+    COORDINATE_TYPE_WORLD = 1;
+  }
+  CoordinateType coordinate_type = 1;
+  double C0 = 2;
+  double C1 = 3;
+  double C2 = 4;
+  double C3 = 5;
+  int64 index = 6;
+  int64 quality = 7;
+
+  enum LineType {
+    LINE_TYPE_UNDECIDED = 0;
+    LINE_TYPE_SOLID = 1;
+    LINE_TYPE_DASHED = 2;
+    LINE_TYPE_VIRTUAL = 3;
+    LINE_TYPE_ROAD_EDGE = 4;
+    LINE_TYPE_BOTTS_DOTS = 5;
+  }
+  LineType line_type = 8;
+
+  enum LineColor {
+    LINE_COLOR_UNKNOWN = 0;
+    LINE_COLOR_WHITE = 1;
+    LINE_COLOR_YELLOW = 2;
+    LINE_COLOR_BLUE_GREEN = 3;
+    LINE_COLOR_ORANGE_RED = 4;
+  }
+  LineColor line_color = 9;
+
+  Point start = 10;
+  Point end = 11;
+  double distance_to_host = 12;
+  repeated Point image_points = 13;
+  double width = 14;
+}
+
+//
+
+message Header {
+  string pdaq_serial_number = 1;
+  string protocol_version = 2;
+  string calmcar_version = 3;
+  string pdaq_version = 4;
+  ImageInfo image_info = 5;
+  string car_type = 6;
+  bytes calmcar_config = 7;
+  string run_mode = 8;
+}
+
+//
+
+message Contour { repeated Point2i point = 1; }
+
+message Segmentation {
+  int64 height = 1;
+  int64 width = 2;
+  repeated int64 mask = 3;
+  repeated Contour contour = 4;
+  repeated Point freespace = 5;
+}
+
+//
+
+enum RoadType {
+  ROAD_TYPE_UNKNOWN = 0;
+  ROAD_TYPE_HIGHWAY = 1;
+}
+
+enum LeftRightIndication {
+  LEFT_RIGHT_INDICATION_NO_LANE_CROSSING_DETECTED = 0;
+  LEFT_RIGHT_INDICATION_LEFT_CROSSING = 1;
+  LEFT_RIGHT_INDICATION_RIGHT_CROSSING = 2;
+}
+
+message Frame {
+  Header header = 1;
+  int64 id = 2;
+
+  Image raw_image = 3;
+  repeated Can raw_can = 4;
+  Gps gps = 5;
+
+  repeated Object object = 6;
+  repeated Lane lane = 7;
+
+  int64 cipv_id = 8;
+  int64 ldw_status = 9;
+  int64 fcw_status = 10;
+  int64 pcw_status = 11;
+  int64 asw_status = 12;
+  int64 bsd_status = 13;
+
+  Segmentation segmentation = 14;
+
+  //
+  int64 lane_number = 15;
+  RoadType road_type = 16;
+  double ttlc = 17;
+  LeftRightIndication left_right_indication = 18;
+  repeated Point camera_position = 19;
+  repeated Point lane_boundary = 20;
+  int64 timestamp = 21;
+}
